@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Beat Fire - Level Finish</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            user-select: none;
+            touch-action: none;
+        }
+
+        body {
+            background: #09030e;
+            color: #fff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Mobile Container Viewport Window */
+        .game-container {
+            width: 390px;
+            height: 844px;
+            background: #0d0614;
+            border: 4px solid #2b1442;
+            border-radius: 12px;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 0 40px rgba(186, 44, 251, 0.3);
+            overflow: hidden;
+        }
+
+        /* ==================== SCREEN 1: MAIN MENU ==================== */
+        #menu-screen {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            background: linear-gradient(180deg, #f09267 0%, #6e273b 35%, #2b111d 100%);
+            position: relative;
+        }
+
+        .mountain-backdrop {
+            position: absolute;
+            top: 60px; left: 0; width: 100%; height: 180px;
+            background: #401625;
+            clip-path: polygon(0% 100%, 10% 45%, 25% 25%, 40% 65%, 55% 15%, 70% 55%, 85% 10%, 100% 100%);
+            opacity: 0.9; z-index: 1;
+        }
+
+        .menu-top-hud {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px; z-index: 2;
+        }
+
+        .menu-coin-box {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 6px 16px; border-radius: 20px;
+            font-weight: bold; color: #ffd700; font-size: 15px;
+        }
+
+        .circle-icon-btn {
+            width: 38px; height: 38px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%; border: 2px solid rgba(255, 255, 255, 0.4);
+            display: flex; align-items: center; justify-content: center; color: white;
+        }
+
+        .menu-logo-graphics {
+            position: absolute; top: 50px; left: 50%;
+            transform: translateX(-50%);
+            width: 90px; height: 90px;
+            border: 2px dashed rgba(255,255,255,0.4); border-radius: 50%;
+            display: flex; justify-content: center; align-items: center; z-index: 2;
+        }
+        .menu-logo-graphics::before {
+            content: ''; width: 10px; height: 10px; background: #fff; border-radius: 50%; box-shadow: 0 0 15px #fff;
+        }
+
+        .side-decorations {
+            position: absolute; top: 100px; width: 100%;
+            display: flex; justify-content: space-between; padding: 0 15px; z-index: 2;
+        }
+
+        .filter-tabs {
+            display: flex; margin-top: 150px; padding: 0 15px; gap: 5px; z-index: 3;
+        }
+        .filter-tab {
+            padding: 8px 24px; background: rgba(43, 22, 36, 0.8);
+            border-radius: 20px 20px 0 0; font-size: 14px; font-weight: bold; color: #b59ba9;
+        }
+        .filter-tab.active { background: #00c3ff; color: #fff; }
+
+        .song-scroller {
+            flex: 1; overflow-y: auto; padding: 10px 15px;
+            display: flex; flex-direction: column; gap: 10px;
+            background: rgba(22, 9, 15, 0.85); z-index: 3; border-top: 2px solid #3d1c2a;
+        }
+
+        .song-item-card {
+            background: rgba(69, 36, 46, 0.6); border-radius: 12px; padding: 10px;
+            display: flex; align-items: center; gap: 12px;
+        }
+        .song-thumb { width: 55px; height: 55px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 20px; }
+        .song-details { flex: 1; }
+        .song-name { font-size: 15px; font-weight: bold; }
+        .song-sub { font-size: 11px; color: #b59ba9; }
+        .stars-row { font-size: 11px; color: #00ffaa; }
+
+        .menu-play-btn {
+            background: linear-gradient(180deg, #7fff00 0%, #00d43b 100%);
+            color: #fff; border: none; padding: 10px 24px; border-radius: 20px;
+            font-weight: bold; font-size: 14px; cursor: pointer;
+        }
+
+        .bottom-nav-footer { height: 70px; background: #1b0a12; display: flex; z-index: 3; }
+        .nav-item { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; font-size: 12px; font-weight: bold; color: #7d596b; }
+        .nav-item.active { color: #fff; background: #3c1928; }
+
+        /* ==================== SCREEN 2: GREEN GAMEPLAY PLAYFIELD ==================== */
+        #gameplay-screen {
+            display: none;
+            flex-direction: column;
+            height: 100%;
+            position: relative;
+            background: linear-gradient(180deg, #1b4d3e 0%, #0f2b22 60%, #071410 100%);
+        }
+
+        .grid-overlay {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-size: 40px 40px;
+            background-image: linear-gradient(to right, rgba(255,255,255,0.03) 1px, transparent 1px),
+                              linear-gradient(to bottom, rgba(255,255,255,0.03) 1px, transparent 1px);
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        .hud-top-container {
+            position: absolute;
+            top: 0; left: 0; width: 100%;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 30;
+        }
+        .game-top-btn { font-size: 22px; cursor: pointer; color: white; opacity: 0.8; background: none; border: none; z-index: 35;}
+        .hud-score { font-size: 36px; font-weight: 900; color: #fff; text-shadow: 0 0 10px rgba(255,255,255,0.4); }
+        .hearts-box { display: flex; gap: 4px; color: #ff3366; font-size: 20px; }
+
+        .bullet-progress-container {
+            position: absolute;
+            top: 75px; left: 15%; width: 70%; height: 6px;
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 4px; overflow: hidden; z-index: 30;
+        }
+        .bullet-progress-fill {
+            width: 0%; height: 100%;
+            background: #4ae3cd;
+            box-shadow: 0 0 8px #4ae3cd;
+            border-radius: 4px;
+            transition: width 0.1s linear;
+        }
+
+        .gameplay-mountain-bg {
+            position: absolute;
+            bottom: 120px; left: 0; width: 100%; height: 260px;
+            background: linear-gradient(to top, #061712 20%, rgba(15, 43, 34, 0));
+            z-index: 2;
+            pointer-events: none;
+        }
+        .vector-peak-1 {
+            position: absolute; bottom: 40px; left: -50px; width: 300px; height: 180px;
+            background: #11362b; clip-path: polygon(50% 0%, 0% 100%, 100% 100%); opacity: 0.7;
+        }
+        .vector-peak-2 {
+            position: absolute; bottom: 30px; right: -40px; width: 280px; height: 200px;
+            background: #154235; clip-path: polygon(50% 0%, 0% 100%, 100% 100%); opacity: 0.8;
+        }
+        .vector-trees-silhouette {
+            position: absolute; bottom: 0; left: 0; width: 100%; height: 60px;
+            background: #061712;
+            clip-path: polygon(0% 100%, 5% 40%, 8% 70%, 12% 30%, 16% 65%, 20% 40%, 25% 75%, 30% 35%, 35% 70%, 41% 25%, 46% 65%, 52% 40%, 58% 75%, 64% 30%, 69% 65%, 75% 35%, 81% 70%, 87% 20%, 92% 65%, 97% 35%, 100% 100%);
+        }
+
+        .notes-canvas {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none; z-index: 10;
+        }
+
+        .beat-note {
+            position: absolute;
+            width: 50px; height: 50px;
+            background: rgba(30, 144, 255, 0.25);
+            border: 3px solid #00f0ff;
+            border-radius: 8px;
+            box-shadow: 0 0 15px #00f0ff, inset 0 0 10px #00f0ff;
+            transform: translate(-50%, -50%);
+            display: flex; align-items: center; justify-content: center;
+        }
+        .beat-note::before {
+            content: ''; width: 16px; height: 16px; background: #fff; border-radius: 50%; box-shadow: 0 0 10px #fff;
+        }
+
+        /* Golden Coin Variant */
+        .beat-note.coin-note {
+            background: rgba(255, 215, 0, 0.3) !important;
+            border: 3px solid #ffd700 !important;
+            box-shadow: 0 0 20px #ffd700, inset 0 0 10px #ffd700 !important;
+            border-radius: 50% !important;
+        }
+        .beat-note.coin-note::before {
+            content: '🪙'; background: transparent; box-shadow: none; font-size: 22px;
+        }
+
+        .crosshair-layer {
+            position: absolute;
+            bottom: 220px; width: 100%;
+            display: flex; justify-content: center;
+            pointer-events: none; z-index: 20;
+        }
+        .reticle {
+            position: absolute; width: 75px; height: 75px;
+            border: 2px dashed rgba(255, 255, 255, 0.7); border-radius: 50%;
+            transform: translateX(-50%); left: 50%;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .reticle::before {
+            content: ''; width: 35px; height: 35px; border: 2px solid rgba(255,255,255,0.4); border-radius: 50%;
+        }
+
+        .swipe-start-overlay {
+            position: absolute;
+            top: 45%; left: 0; width: 100%;
+            display: flex; flex-direction: column; align-items: center; gap: 15px;
+            z-index: 25; pointer-events: none;
+        }
+        .swipe-text {
+            font-size: 18px; font-weight: bold; color: #fff; letter-spacing: 1px; text-transform: uppercase;
+        }
+        .hand-icon-anim {
+            font-size: 32px; animation: sideSwipe 1.5s infinite ease-in-out;
+        }
+        @keyframes sideSwipe {
+            0% { transform: translateX(-30px); opacity: 0.2; }
+            50% { transform: translateX(30px); opacity: 1; }
+            100% { transform: translateX(-30px); opacity: 0.2; }
+        }
+
+        .control-panel {
+            position: absolute; bottom: 0; left: 0; width: 100%; height: 110px;
+            background: rgba(4, 15, 12, 0.95);
+            border-top: 1px solid #14362b;
+            display: flex; justify-content: center; align-items: center; z-index: 30;
+        }
+        .slider-track { width: 300px; height: 6px; background: rgba(255, 255, 255, 0.1); border-radius: 3px; position: relative; }
+        .slider-handle { width: 32px; height: 32px; background: #ffffff; border-radius: 50%; position: absolute; top: -13px; left: 134px; box-shadow: 0 0 10px #fff; }
+
+        .flash-effect {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(255, 255, 255, 0.15); opacity: 0; pointer-events: none; z-index: 40;
+        }
+        .flash-active { animation: shotFlash 0.06s ease-out; }
+        @keyframes shotFlash { 0% { opacity: 1; } 100% { opacity: 0; } }
+
+        /* ==================== SCREEN 3: OVERLAYS (GAME OVER & VICTORY) ==================== */
+        #gameover-screen, #victory-screen {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(10, 3, 15, 0.92);
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+        }
+        .go-title {
+            font-size: 42px; font-weight: 900; color: #ff3366;
+            text-transform: uppercase; letter-spacing: 2px;
+            text-shadow: 0 0 20px rgba(255, 51, 102, 0.6);
+            margin-bottom: 10px;
+        }
+        .vic-title {
+            font-size: 46px; font-weight: 900; color: #ffd700;
+            text-transform: uppercase; letter-spacing: 2px;
+            text-shadow: 0 0 25px rgba(255, 215, 0, 0.7);
+            margin-bottom: 5px;
+        }
+        .vic-percent { font-size: 24px; font-weight: bold; color: #00ffaa; margin-bottom: 25px; }
+        .go-score-lbl { font-size: 16px; color: #b59ba9; text-transform: uppercase; }
+        .go-score-num { font-size: 64px; font-weight: 900; color: #fff; margin-bottom: 50px; }
+        .reward-box { font-size: 24px; font-weight: bold; color: #fff; background: rgba(255,215,0,0.15); border: 2px dashed #ffd700; padding: 15px 30px; border-radius: 12px; margin-bottom: 60px; text-align: center; box-shadow: 0 0 15px rgba(255,215,0,0.2); }
+        .go-btn {
+            background: linear-gradient(180deg, #00c3ff 0%, #0077ff 100%);
+            color: #fff; border: none; padding: 15px 45px; border-radius: 30px;
+            font-size: 18px; font-weight: bold; cursor: pointer; box-shadow: 0 0 15px #00c3ff;
+            text-transform: uppercase; letter-spacing: 1px; margin-bottom: 15px;
+        }
+        .go-menu-btn {
+            background: transparent; color: #b59ba9; border: 2px solid #3d1c2a;
+            padding: 10px 30px; border-radius: 20px; font-size: 14px; cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="game-container" id="main-viewport">
+        <div class="flash-effect" id="flash-layer"></div>
+
+        <!-- SCREEN 1: MAIN MENU -->
+        <div id="menu-screen">
+            <div class="mountain-backdrop"></div>
+            <div class="menu-top-hud">
+                <div class="menu-coin-box" id="menu-coin-display">🪙 401</div>
+                <div class="circle-icon-btn">⚙️</div>
+            </div>
+            <div class="menu-logo-graphics"></div>
+            <div class="side-decorations">
+                <div class="circle-icon-btn">⚙️</div>
+                <div class="circle-icon-btn">💎</div>
+            </div>
+            <div class="filter-tabs">
+                <div class="filter-tab active">All</div>
+                <div class="filter-tab">New</div>
+                <div class="filter-tab">Collection</div>
+            </div>
+            <div class="song-scroller">
+                <div class="song-item-card">
+                    <div class="song-thumb" style="background-color: #ffbe76;">🌅</div>
+                    <div class="song-details">
+                        <div class="song-name">Nevada</div>
+                        <div class="song-sub">Vicetone</div>
+                        <div class="stars-row">🔷 🔷 🔷</div>
+                    </div>
+                    <button class="menu-play-btn" onclick="startGameplay(event)">Play</button>
+                </div>
+                <div class="song-item-card">
+                    <div class="song-thumb" style="background-color: #3d1c66;">🎧</div>
+                    <div class="song-details">
+                        <div class="song-name">Alone</div>
+                        <div class="song-sub">Marshmello</div>
+                        <div class="stars-row">🔷 🔷 🔷</div>
+                    </div>
+                    <button class="menu-play-btn" onclick="startGameplay(event)">Play</button>
+                </div>
+            </div>
+            <div class="bottom-nav-footer">
+                <div class="nav-item active">🎵 Songs</div>
+                <div class="nav-item">🛣️ Stage</div>
+            </div>
+        </div>
+
+        <!-- SCREEN 2: GREEN GAMEPLAY RUNWAY -->
+        <div id="gameplay-screen">
+            <div class="grid-overlay"></div>
+            <div class="hud-top-container">
+                <button class="game-top-btn" onclick="quitGameplay(event)">⏸️</button>
+                <div class="hud-score" id="hud-score">0</div>
+                <div class="hearts-box">❤️</div>
+            </div>
+            <div class="bullet-progress-container">
+                <div class="bullet-progress-fill" id="progress-fill"></div>
+            </div>
+
+            <div class="gameplay-mountain-bg">
+                <div class="vector-peak-1"></div>
+                <div class="vector-peak-2"></div>
+                <div class="vector-trees-silhouette"></div>
+            </div>
+
+            <div class="notes-canvas" id="notes-canvas-layer"></div>
+
+            <div class="swipe-start-overlay" id="swipe-start-overlay">
+                <div class="swipe-text">Swipe to SHOOT</div>
+                <div class="hand-icon-anim">👆</div>
+            </div>
+
+            <div class="crosshair-layer">
+                <div class="reticle" id="game-reticle"></div>
+            </div>
+
+            <div class="control-panel">
+                <div class="slider-track" id="track-element">
+                    <div class="slider-handle" id="control-handle"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SCREEN 3: GAME OVER OVERLAY -->
+        <div id="gameover-screen">
+            <div class="go-title">Game Over</div>
+            <div class="go-score-lbl">Final Score</div>
+            <div class="go-score-num" id="go-final-score">0</div>
+            <button class="go-btn" onclick="startGameplay(event)">Try Again</button>
+            <button class="go-menu-btn" onclick="backToMenuFromOverlays()">Main Menu</button>
+        </div>
+
+        <!-- SCREEN 4: VICTORY OVERLAY -->
+        <div id="victory-screen">
+            <div class="vic-title">100% Passed</div>
+            <div class="vic-percent">You Got 100 Coins!</div>
+            <div class="reward-box">🪙 +100</div>
+            <button class="go-btn" onclick="backToMenuFromOverlays()">Claim & Continue</button>
+        </div>
+    </div>
+
+    <script>
+        const menuScreen = document.getElementById('menu-screen');
+        const gameplayScreen = document.getElementById('gameplay-screen');
+        const gameoverScreen = document.getElementById('gameover-screen');
+        const victoryScreen = document.getElementById('victory-screen');
+        const notesCanvas = document.getElementById('notes-canvas-layer');
+        const swipeOverlay = document.getElementById('swipe-start-overlay');
+        const flashLayer = document.getElementById('flash-layer');
+        const reticle = document.getElementById('game-reticle');
+        const handle = document.getElementById('control-handle');
+        const trackElement = document.getElementById('track-element');
+        const hudScore = document.getElementById('hud-score');
+        const goFinalScore = document.getElementById('go-final-score');
+        const progressFill = document.getElementById('progress-fill');
+        const menuCoinDisplay = document.getElementById('menu-coin-display');
+
+        let score = 0;
+        let totalCoins = 401;
+        let gameLoopInterval = null;
+        let noteSpawnInterval = null;
+        let activeNotes = [];
+        let isPlaying = false;
+        let gameHasStartedRunning = false; 
+        let isDragging = false;
+        let audioCtx = null;
+
+        // Level Management Configurations
+        let notesSpawnedCount = 0;
+        const maxNotesInLevel = 20; // 19 regular notes + 1 coin note
+
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+        }
+
+        function startGameplay(event) {
+            if(event) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+
+            menuScreen.style.display = 'none';
+            gameoverScreen.style.display = 'none';
+            victoryScreen.style.display = 'none';
+            gameplayScreen.style.display = 'flex';
+            swipeOverlay.style.display = 'flex'; 
+
+            score = 0;
+            notesSpawnedCount = 0;
+            activeNotes = [];
+            isPlaying = true;
+            gameHasStartedRunning = false; 
+            hudScore.innerText = score;
+            progressFill.style.width = "0%";
+            notesCanvas.innerHTML = "";
+            reticle.style.left = `195px`;
+            handle.style.left = `134px`;
+
+            clearInterval(gameLoopInterval);
+            clearInterval(noteSpawnInterval);
+
+            gameLoopInterval = setInterval(updatePhysics, 16);
+            try { initAudio(); } catch(e){}
+        }
+
+        function triggerActualGameStart() {
+            gameHasStartedRunning = true;
+            swipeOverlay.style.display = 'none'; 
+            noteSpawnInterval = setInterval(spawnCubeTarget, 700); 
+        }
+
+        function triggerGameOver() {
+            isPlaying = false;
+            gameHasStartedRunning = false;
+            clearInterval(gameLoopInterval);
+            clearInterval(noteSpawnInterval);
+            goFinalScore.innerText = score;
+            gameoverScreen.style.display = 'flex';
+        }
+
+        function triggerVictory() {
+            isPlaying = false;
+            gameHasStartedRunning = false;
+            clearInterval(gameLoopInterval);
+            clearInterval(noteSpawnInterval);
+            
+            totalCoins += 100;
+            menuCoinDisplay.innerText = `🪙 ${totalCoins}`;
+            progressFill.style.width = "100%";
+            victoryScreen.style.display = 'flex';
+        }
+
+        function backToMenuFromOverlays() {
+            gameoverScreen.style.display = 'none';
+            victoryScreen.style.display = 'none';
+            gameplayScreen.style.display = 'none';
+            menuScreen.style.display = 'flex';
+        }
+
+        function quitGameplay(event) {
+            if(event) event.stopPropagation();
+            isPlaying = false;
+            gameHasStartedRunning = false;
+            clearInterval(gameLoopInterval);
+            clearInterval(noteSpawnInterval);
+            menuScreen.style.display = 'flex';
+            gameplayScreen.style.display = 'none';
+        }
+
+        function getClientX(e) {
+            return e.touches ? e.touches[0].clientX : e.clientX;
+        }
+
+        window.addEventListener('mousedown', (e) => { startDrag(e); });
+        window.addEventListener('touchstart', (e) => { startDrag(e); }, { passive: false });
+        window.addEventListener('mousemove', (e) => { dragMove(e); });
+        window.addEventListener('touchmove', (e) => { dragMove(e); }, { passive: false });
+        window.addEventListener('mouseup', () => { endDrag(); });
+        window.addEventListener('touchend', () => { endDrag(); });
+
+        function startDrag(e) {
+            if (!isPlaying) return;
+            if (e.target.classList.contains('game-top-btn')) return;
+
+            isDragging = true;
+            if(!gameHasStartedRunning) {
+                triggerActualGameStart();
+            }
+            processMovement(getClientX(e));
+        }
+
+        function dragMove(e) {
+            if (!isDragging || !isPlaying) return;
+            processMovement(getClientX(e));
+        }
+
+        function endDrag() { isDragging = false; }
+
+        function processMovement(pageX) {
+            const trackRect = trackElement.getBoundingClientRect();
+            let relativeX = pageX - trackRect.left - 16;
+            
+            if (relativeX < 0) relativeX = 0;
+            const maxHandleLeft = trackRect.width - 32;
+            if (relativeX > maxHandleLeft) relativeX = maxHandleLeft;
+
+            handle.style.left = `${relativeX}px`;
+            const percent = relativeX / maxHandleLeft;
+            
+            const newReticleX = 40 + (percent * 310);
+            reticle.style.left = `${newReticleX}px`;
+
+            checkCollisions(newReticleX);
+        }
+
+        function playGunSoundEffect() {
+            if (!audioCtx || audioCtx.state === 'suspended') return;
+            try {
+                let osc = audioCtx.createOscillator();
+                let gain = audioCtx.createGain();
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(180, audioCtx.currentTime);
+                gain.gain.setValueAtTime(0.15, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.08);
+                osc.connect(gain); gain.connect(audioCtx.destination);
+                osc.start(); osc.stop(audioCtx.currentTime + 0.08);
+            } catch(e){}
+        }
+
+        function spawnCubeTarget() {
+            if(!isPlaying || !gameHasStartedRunning) return;
+            
+            notesSpawnedCount++;
+            
+            // If we have spawned all standard notes, stop the regular spawning loop
+            if (notesSpawnedCount >= maxNotesInLevel) {
+                clearInterval(noteSpawnInterval);
+            }
+
+            const note = document.createElement('div');
+            
+            // The 20th final note is transformed into the golden coin item
+            const isCoin = (notesSpawnedCount === maxNotesInLevel);
+            note.className = isCoin ? 'beat-note coin-note' : 'beat-note';
+            
+            const lanes = [70, 150, 240, 320];
+            const targetX = lanes[Math.floor(Math.random() * lanes.length)];
+            
+            notesCanvas.appendChild(note);
+            activeNotes.push({ element: note, yPos: 0, xPos: targetX, isCoin: isCoin });
+        }
+
+        function updatePhysics() {
+            if (!isPlaying || !gameHasStartedRunning) return;
+
+            const canvasHeight = notesCanvas.offsetHeight;
+            const targetHitY = canvasHeight - 220; 
+
+            for (let i = activeNotes.length - 1; i >= 0; i--) {
+                let note = activeNotes[i];
+                note.yPos += 5.5; 
+
+                note.element.style.left = `${note.xPos}px`;
+                note.element.style.top = `${note.yPos}px`;
+
+                // Hit zone check
+                if (note.yPos >= targetHitY - 25 && note.yPos <= targetHitY + 25) {
+                    const reticleX = parseFloat(reticle.style.left);
+                    if (Math.abs(reticleX - note.xPos) <= 35) {
+                        triggerLaserHit(i);
+                        continue;
+                    }
+                }
+
+                // Game Over condition (Missed object)
+                if (note.yPos > targetHitY + 40) {
+                    note.element.remove();
+                    activeNotes.splice(i, 1);
+                    triggerGameOver(); 
+                    return;
+                }
+            }
+        }
+
+        function checkCollisions(currentReticleX) {
+            if (!isPlaying || !gameHasStartedRunning) return;
+            const canvasHeight = notesCanvas.offsetHeight;
+            const targetHitY = canvasHeight - 220;
+
+            for (let i = activeNotes.length - 1; i >= 0; i--) {
+                let note = activeNotes[i];
+                if (note.yPos >= targetHitY - 25 && note.yPos <= targetHitY + 25) {
+                    if (Math.abs(currentReticleX - note.xPos) <= 35) {
+                        triggerLaserHit(i);
+                    }
+                }
+            }
+        }
+
+        function triggerLaserHit(index) {
+            const hitNote = activeNotes[index];
+            
+            flashLayer.classList.remove('flash-active');
+            void flashLayer.offsetWidth; 
+            flashLayer.classList.add('flash-active');
+            playGunSoundEffect();
+
+            score += 1;
+            hudScore.innerText = score;
+
+            // Live progress HUD updates as you scale down the targets
+            const progressPercentage = Math.min(Math.floor((notesSpawnedCount / maxNotesInLevel) * 100), 95);
+            progressFill.style.width = `${progressPercentage}%`;
+
+            hitNote.element.remove();
+            activeNotes.splice(index, 1);
+
+            // If the special coin was hit successfully, player wins!
+            if (hitNote.isCoin) {
+                triggerVictory();
+            }
+        }
+    </script>
+</body>
+</html>
